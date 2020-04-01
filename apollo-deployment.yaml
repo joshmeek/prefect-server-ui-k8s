@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: apollo
+  name: apollo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: apollo
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        service: apollo
+    spec:
+      containers:
+      - args:
+        - npm
+        - run
+        - serve
+        env:
+        - name: HASURA_API_URL
+          value: http://hasura:3000/v1alpha1/graphql
+        - name: PREFECT_API_HEALTH_URL
+          value: http://graphql:4201/health
+        - name: PREFECT_API_URL
+          value: http://graphql:4201/graphql/alpha/
+        image: prefecthq/apollo:latest
+        imagePullPolicy: "Always"
+        name: apollo
+        ports:
+        - containerPort: 4200
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}

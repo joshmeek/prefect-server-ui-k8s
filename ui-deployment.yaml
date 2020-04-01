@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: ui
+  name: ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: ui
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        service: ui
+    spec:
+      containers:
+      - args:
+        - ./intercept.sh
+        image: prefecthq/ui:latest
+        imagePullPolicy: "Always"
+        name: ui
+        ports:
+        - containerPort: 8080
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}

@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: hasura
+  name: hasura
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: hasura
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        service: hasura
+    spec:
+      containers:
+      - args:
+        - graphql-engine
+        - serve
+        env:
+        - name: HASURA_GRAPHQL_DATABASE_URL
+          value: "postgresql://prefect:prefect@postgres:5432/prefect_server"
+        - name: HASURA_GRAPHQL_ENABLE_CONSOLE
+          value: "true"
+        - name: HASURA_GRAPHQL_QUERY_PLAN_CACHE_SIZE
+          value: "100"
+        - name: HASURA_GRAPHQL_SERVER_PORT
+          value: "3000"
+        image: hasura/graphql-engine:v1.1.0
+        imagePullPolicy: "Always"
+        name: hasura
+        ports:
+        - containerPort: 3000
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
