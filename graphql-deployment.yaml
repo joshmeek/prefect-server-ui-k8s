@@ -16,26 +16,26 @@ spec:
         service: graphql
     spec:
       containers:
-      - args:
-        - bash
-        - -c
-        - 'prefect-server database upgrade -y && python src/prefect_server/services/graphql/server.py'
-        env:
-        - name: PREFECT_SERVER__DATABASE__CONNECTION_URL
-          value: postgresql://prefect:prefect@postgres:5432/prefect_server
-        - name: PREFECT_SERVER__HASURA__ADMIN_SECRET
-          value: hasura-secret-admin-secret
-        - name: PREFECT_SERVER__HASURA__HOST
-          value: hasura
-        - name: PREFECT_SERVER__SERVICES__HOST
-          value: 0.0.0.0
-        image: prefecthq/server:latest
-        imagePullPolicy: "Always"
-        name: graphql
-        ports:
-        - containerPort: 4201
-        resources: {}
+        - args:
+            - bash
+            - -c
+            - "prefect-server database upgrade -y && python src/prefect_server/services/graphql/server.py"
+          env:
+            - name: PREFECT_SERVER__DATABASE__CONNECTION_URL
+              value: postgresql://prefect:prefect@postgres:5432/prefect_server
+            - name: PREFECT_SERVER__HASURA__ADMIN_SECRET
+              value: hasura-secret-admin-secret
+            - name: PREFECT_SERVER__HASURA__HOST
+              value: hasura
+            - name: PREFECT_SERVER__SERVICES__HOST
+              value: 0.0.0.0
+          image: prefecthq/server:latest
+          imagePullPolicy: "Always"
+          name: graphql
+          ports:
+            - containerPort: 4201
+          resources: {}
       restartPolicy: Always
-      serviceAccountName: ""
+      serviceAccountName: "prefect"
       volumes: null
 status: {}
