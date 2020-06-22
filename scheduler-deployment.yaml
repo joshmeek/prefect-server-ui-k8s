@@ -16,23 +16,23 @@ spec:
         service: scheduler
     spec:
       containers:
-      - args:
-        - python
-        - src/prefect_server/services/scheduler/scheduler.py
-        env:
-        - name: PREFECT_SERVER__DATABASE__CONNECTION_URL
-          value: postgresql://prefect:prefect@postgres:5432/prefect_server
-        - name: PREFECT_SERVER__HASURA__ADMIN_SECRET
-          value: hasura-secret-admin-secret
-        - name: PREFECT_SERVER__HASURA__HOST
-          value: hasura
-        - name: PREFECT_SERVER__SERVICES__HOST
-          value: 0.0.0.0
-        image: prefecthq/server:latest
-        imagePullPolicy: "Always"
-        name: scheduler
-        resources: {}
+        - args:
+            - python
+            - src/prefect_server/services/scheduler/scheduler.py
+          env:
+            - name: PREFECT_SERVER__DATABASE__CONNECTION_URL
+              value: postgresql://prefect:prefect@postgres:5432/prefect_server
+            - name: PREFECT_SERVER__HASURA__ADMIN_SECRET
+              value: hasura-secret-admin-secret
+            - name: PREFECT_SERVER__HASURA__HOST
+              value: hasura
+            - name: PREFECT_SERVER__SERVICES__HOST
+              value: 0.0.0.0
+          image: prefecthq/server:0.10.4
+          imagePullPolicy: "Always"
+          name: scheduler
+          resources: {}
       restartPolicy: Always
-      serviceAccountName: ""
+      serviceAccountName: "prefect"
       volumes: null
 status: {}

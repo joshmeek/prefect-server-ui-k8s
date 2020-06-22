@@ -15,16 +15,32 @@ spec:
       labels:
         service: ui
     spec:
+      initContainers:
+        - name: init-apollo
+          image: "busybox:1.28"
+          command:
+            - sh
+            - "-c"
+            - "until nslookup apollo.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for apollo; sleep 2; done"
       containers:
-      - args:
-        - ./intercept.sh
-        image: prefecthq/ui:latest
-        imagePullPolicy: "Always"
-        name: ui
-        ports:
-        - containerPort: 8080
-        resources: {}
+        - name: ui
+          ## TODO: pin this at 0.10.5 or later when available
+          image: prefecthq/ui:master
+          imagePullPolicy: "Always"
+          args:
+            - /intercept.sh
+          env:
+            - name: PREFECT_SERVER__GRAPHQL_URL
+              value: "http://localhost:4200/graphql"
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: 20m
+              memory: 128Mi
+            requests:
+              cpu: 10m
+              memory: 32Mi
       restartPolicy: Always
-      serviceAccountName: ""
-      volumes: null
+      serviceAccountName: "prefect"
 status: {}

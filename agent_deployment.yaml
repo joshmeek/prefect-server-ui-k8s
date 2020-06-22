@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prefect-agent
+  labels:
+    app.kubernetes.io/component: agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: agent
+    spec:
+      serviceAccountName: prefect
+      initContainers:
+        - name: init-apollo
+          image: "busybox:1.28"
+          command:
+            - sh
+            - "-c"
+            - "until nslookup apollo.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for apollo; sleep 2; done"
+      containers:
+        - name: agent
+          image: "prefecthq/prefect:0.10.4-python3.7"
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+            - "-c"
+          args:
+            - "prefect agent start kubernetes"
+          env:
+            - name: PREFECT__BACKEND
+              value: server
+            - name: PREFECT__CLOUD__API
+              value: "http://apollo.prefect:4200"
+            - name: NAMESPACE
+              value: prefect
+            - name: PREFECT__CLOUD__AGENT__NAME
+              value: kube-agent
+            - name: JOB_MEM_REQUEST
+              value: 128Mi
+            - name: JOB_MEM_LIMIT
+              value: 1Gi
+            - name: JOB_CPU_REQUEST
+              value: 50m
+            - name: JOB_CPU_LIMIT
+              value: 500m
+          livenessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - from prefect.agent.kubernetes.agent import check_heartbeat; check_heartbeat()
+            initialDelaySeconds: 40
+            periodSeconds: 40
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 2
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+        - name: resource-manager
+          image: "prefecthq/prefect:0.10.4-python3.7"
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+            - -c
+          args:
+            - python -c 'from prefect.agent.kubernetes import ResourceManager; ResourceManager().start()'
+          env:
+            - name: PREFECT__BACKEND
+              value: server
+            - name: NAMESPACE
+              value: prefect
+            - name: PREFECT__CLOUD__API
+              value: "http://apollo.prefect:4200"
+            - name: PREFECT__CLOUD__AGENT__RESOURCE_MANAGER__LOOP_INTERVAL
+              value: "60"
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+      volumes: []
